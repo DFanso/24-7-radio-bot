@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { CommandInteraction, GuildMember } from 'discord.js';
+import { CommandInteraction, GuildMember, EmbedBuilder } from 'discord.js';
 import { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnection, StreamType, AudioResource } from '@discordjs/voice';
 
 let currentStationUrl: string = 'https://stream.raiseradio.com/hardstyle-high';
@@ -25,7 +25,11 @@ module.exports = {
             const member = interaction.member as GuildMember;
             const voiceChannel = member.voice.channel;
             if (!voiceChannel) {
-                return interaction.reply({ content: 'You need to be in a voice channel!', ephemeral: true });
+                const embed = new EmbedBuilder()
+                    .setTitle('Error')
+                    .setDescription('You need to be in a voice channel!')
+                    .setColor(0xFF0000); // Red color
+                return interaction.reply({ embeds: [embed], ephemeral: true });
             }
 
             currentVoiceChannel = joinVoiceChannel({
@@ -49,15 +53,27 @@ module.exports = {
             player.on('error', error => {
                 const metadata = (error.resource.metadata as { title: string }).title;
                 console.error('Error:', error.message, 'with track', metadata);
-                interaction.followUp({ content: 'An error occurred while trying to play the station.', ephemeral: true });
+                const embed = new EmbedBuilder()
+                    .setTitle('Error')
+                    .setDescription('An error occurred while trying to play the station.')
+                    .setColor(0xFF0000); // Red color
+                interaction.followUp({ embeds: [embed], ephemeral: true });
             });
 
             currentStationUrl = station;
-            interaction.reply(`Broadcasting **${station}**`);
+            const embed = new EmbedBuilder()
+                .setTitle('Now Playing')
+                .setDescription(`Broadcasting **${station}**`)
+                .setColor(0x00FF00); // Green color
+            interaction.reply({ embeds: [embed] });
 
         } catch (error) {
             console.error(error);
-            interaction.reply({ content: 'An error occurred while trying to play the station.', ephemeral: true });
+            const embed = new EmbedBuilder()
+                .setTitle('Error')
+                .setDescription('An error occurred while trying to play the station.')
+                .setColor(0xFF0000); // Red color
+            interaction.reply({ embeds: [embed], ephemeral: true });
         }
     },
 };
