@@ -1,10 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { playerStatus, currentStationName } from '../shared/state';
 import { AudioPlayerStatus } from '@discordjs/voice';
-
-let currentStationUrl: string = 'https://stream.raiseradio.com/hardstyle-high';
-let currentStationName: string = 'RaiseRadio';
-let playerStatus: AudioPlayerStatus | null = null; // Track the player status
 
 module.exports = {
     data: new SlashCommandBuilder()

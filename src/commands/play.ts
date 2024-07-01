@@ -1,10 +1,11 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { CommandInteraction, GuildMember, EmbedBuilder } from 'discord.js';
 import { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnection, StreamType, AudioResource } from '@discordjs/voice';
+import { currentStationUrl, currentStationName, playerStatus, updateCurrentStationUrl, updateCurrentStationName, updatePlayerStatus, updatePlayer } from '../shared/state';
 
-let currentStationUrl: string = 'https://stream.raiseradio.com/hardstyle-high';
 let currentVoiceChannel: VoiceConnection | null = null;
 let player = createAudioPlayer();
+updatePlayer(player); // Update the shared player state
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -21,6 +22,7 @@ module.exports = {
         try {
             const stationOption = interaction.options.get('station');
             const station = stationOption && stationOption.value ? stationOption.value as string : currentStationUrl;
+            const stationName = stationOption && stationOption.name ? stationOption.name : 'RaiseRadio';
 
             const member = interaction.member as GuildMember;
             const voiceChannel = member.voice.channel;
@@ -40,6 +42,7 @@ module.exports = {
 
             const resource: AudioResource = createAudioResource(station, {
                 inputType: StreamType.Arbitrary,
+                inlineVolume: true, // Enable volume control
                 metadata: { title: station }
             });
 
@@ -60,11 +63,14 @@ module.exports = {
                 interaction.followUp({ embeds: [embed], ephemeral: true });
             });
 
-            currentStationUrl = station;
+            updateCurrentStationUrl(station);
+            updateCurrentStationName(stationName);
+            updatePlayerStatus(AudioPlayerStatus.Playing); // Update the player status
             const embed = new EmbedBuilder()
                 .setTitle('Now Playing')
-                .setDescription(`Broadcasting **${station}**`)
-                .setColor(0x00FF00); // Green color
+                .setDescription(`Broadcasting **${stationName}**`)
+                .setColor(0x00FF00) // Green color
+                .setThumbnail('https://raiseradio.com/Logo.png');
             interaction.reply({ embeds: [embed] });
 
         } catch (error) {
