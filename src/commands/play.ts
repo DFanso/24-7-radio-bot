@@ -7,6 +7,16 @@ let currentVoiceChannel: VoiceConnection | null = null;
 let player = createAudioPlayer();
 updatePlayer(player); // Update the shared player state
 
+function getStationNameFromUrl(url: string): string {
+    try {
+        const urlObj = new URL(url);
+        return urlObj.hostname.split('.')[1]; // Extracting the second-level domain as the station name
+    } catch (error) {
+        console.error('Invalid URL:', error);
+        return 'Unknown Station';
+    }
+}
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('play')
@@ -20,9 +30,11 @@ module.exports = {
                 )),
     async execute(interaction: CommandInteraction) {
         try {
+            const option = interaction.options.data;
             const stationOption = interaction.options.get('station');
             const station = stationOption && stationOption.value ? stationOption.value as string : currentStationUrl;
-            const stationName = stationOption && stationOption.name ? stationOption.name : 'RaiseRadio';
+            const stationName =  getStationNameFromUrl(station);
+            console.log(option);
 
             const member = interaction.member as GuildMember;
             const voiceChannel = member.voice.channel;
